@@ -1,17 +1,13 @@
-from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import PostForm
 from .models import Group, Post, User
-
-NUM_OF_POSTS = 10
+from .utils import paginator
 
 
 def index(request):
     post_list = Post.objects.all()
-    paginator = Paginator(post_list, NUM_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator(post_list, request)
     context = {
         'page_obj': page_obj,
     }
@@ -21,9 +17,7 @@ def index(request):
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     post_list = group.posts.all()
-    paginator = Paginator(post_list, NUM_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator(post_list, request)
     context = {
         'group': group,
         'page_obj': page_obj,
@@ -34,9 +28,7 @@ def group_posts(request, slug):
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     post_list = author.posts.all()
-    paginator = Paginator(post_list, NUM_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator(post_list, request)
     context = {
         'page_obj': page_obj,
         'username': username,
