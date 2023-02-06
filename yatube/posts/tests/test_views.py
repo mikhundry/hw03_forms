@@ -18,7 +18,7 @@ class PostViewTest(TestCase):
             slug='test-slug',
             description='Тестовое описание',
         )
-        cls.user = User.objects.create_user(username='HasNoName')
+        cls.user = User.objects.create(username='HasNoName')
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
         cls.post = Post.objects.create(
@@ -112,12 +112,29 @@ class PostViewTest(TestCase):
                 self.assertIsInstance(form_field, expected)
         self.assertEqual(response.context['post_id'], self.post.pk)
 
+    def test_post_added_correctly(self):
+        """Пост при создании добавлен корректно"""
+        index = self.authorized_client.get(
+            reverse('posts:index')
+            ).context['page_obj']
+        group_list = self.authorized_client.get(
+            reverse('posts:group_list', kwargs={'slug': f'{self.group.slug}'})
+            ).context['page_obj']
+        profile = self.authorized_client.get(
+            reverse('posts:profile', kwargs={
+                'username': f'{self.user.username}'
+                })
+            ).context['page_obj']
+        self.assertIn(self.post, index)
+        self.assertIn(self.post, group_list)
+        self.assertIn(self.post, profile)
+
 
 class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.author = User.objects.create_user(username='Author')
+        cls.author = User.objects.create(username='Author')
         cls.group = Group.objects.create(
             title='test_group',
             description='test_decription',
@@ -130,17 +147,15 @@ class PaginatorViewsTest(TestCase):
                 text=f'test_post {i}',
                 group=cls.group,
             ))
-            Post.objects.bulk_create(cls.posts)
+        Post.objects.bulk_create(cls.posts)
     
     def setUp(self) -> None:
-        self.user = User.objects.create_user(username='HasNoName')
+        self.user = User.objects.create(username='HasNoName')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
     def test_first_page_contains_ten_records(self):
         response = self.client.get(reverse('posts:index'))
         self.assertEqual(len(response.context['page_obj']), 10)
-
-    def test_second_page_contains_three_records(self):
         response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(len(response.context['page_obj']), 3)
