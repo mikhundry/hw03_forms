@@ -25,7 +25,12 @@ SECRET_KEY = 'ovgim_o46)yv^1v-i+q(mrgjz$#x2&z^3l&38)a&4o-q1c+(_n'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    'testserver',
+]
 
 
 # Application definition
